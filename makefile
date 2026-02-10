@@ -1,3 +1,2 @@
 tpong: tpong.c
-	gcc -Wall -Wextra -g tpong.c -o tpong -lncursesw
-
+	clang tpong.c -o tpong -o -lncursesw
