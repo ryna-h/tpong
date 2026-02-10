@@ -31,42 +31,89 @@ int main(int argc, char *argv[]) {
 	WIN rWin;
 	BALL ball;
 
-	int xBall=0, yBall=0; // serve as active coordinates for ball
-	int xMax=0, yMax=0; //max x & y coords. may need to reinitialize these in case user changes screen size.
-	getmaxyx(stdscr, yMax, xMax); //gets screen size in xy coords. stdscr is initialized by initscr()
+	int xBall, yBall; // serve as active coordinates for ball
+	int xMax, yMax; //max x & y coords. may need to reinitialize these in case user changes screen size.
 	int ch;
-	xBall = xMax/2;
-	yBall = yMax/2;
-
-	int nextX=0, nextY=0; // should probably set these to middle of screen. 
+	int nextX, nextY; // should probably set these to middle of screen. 
 	int direction=1; //sets direction of ball if positive right negative left.
     
 	initscr(); //sets up screen 
  	noecho(); //tells terminal to not echo keypresses
+	getmaxyx(stdscr, yMax, xMax); //gets screen size in xy coords. stdscr is initialized by initscr()
 	curs_set(FALSE); //hides cursor in window
 	
-	while((ch = getch()) != KEY_F(1)){
-		switch(ch){
-			case 'w':
+	timeout(30); //cycle time for entire game currently 30ms 
+				 
+	keypad(stdscr, TRUE);		/* I need that nifty F1 	*/
+	init_win_params(&lWin);
+	init_win_params(&rWin);
+	refresh();
+
+	//starting x position for each paddle
+	lWin.startx = 2;
+	rWin.startx = xMax-4;
+
+	//starting point for ball
+	xBall = xMax/2;
+	yBall = yMax/2;
+
+
+	while(TRUE){
+		ch = getch();
+		//lBar logic
+		if (ch != ERR){
+			switch(ch){
+				case 'w':
+				create_box(&lWin, FALSE);
+				--lWin.starty;
+				create_box(&lWin, TRUE);
+				break;
+			case 's':
 				create_box(&lWin, FALSE);
 				++lWin.starty;
 				create_box(&lWin, TRUE);
+				break;
+			}
 		}
-	}
-	
-	while(1){
-		clear(); //clears screen
-		mvprintw(yBall,xBall,"o"); //prints in y,x coordinates
-		refresh(); //refreshes screen
-		usleep(DELAY);
+		//rBar logic
+		if (ch != ERR){
+			switch(ch){
+				case 'i':
+				create_box(&rWin, FALSE);
+				--rWin.starty;
+				create_box(&rWin, TRUE);
+				break;
+			case 'k':
+				create_box(&rWin, FALSE);
+				++rWin.starty;
+				create_box(&rWin, TRUE);
+				break;
+			}
+		}
+		//ball logic
 		nextX = xBall + direction;
 
-		if (nextX >= xMax || nextX < 0){ //for loop that checks wall limits and swaps ball direction
-			direction = direction * -1;
-		} 
-		else{
-			xBall+= direction;
+		if ((nextX >= xMax-4 || nextX <= 4) && (yBall >= lWin.starty && yBall <=lWin.starty+5) && (xBall < xMax/2)){
+			direction = direction *-1;
 		}
+		else if((nextX >= xMax-4 || nextX <= 4) && (yBall >= rWin.starty && yBall <= rWin.starty+5) && (xBall > xMax/2)){
+			direction = direction *-1;
+		}
+		else{
+			xBall += direction;
+		}
+
+		//if (nextX >= xMax || nextX < 0){ //for loop that checks wall limits and swaps ball direction
+		//	direction = direction * -1;
+		//} 
+		//else{
+		//	xBall+= direction;
+		//}
+		clear();
+   		create_box(&lWin, TRUE);            // or draw paddle here
+   		create_box(&rWin, TRUE);            // or draw paddle here
+   		mvprintw(yBall, xBall, "o");
+    	refresh();
 	}
 	endwin(); //after program is finished returns to normal terminal
 }
