@@ -35,7 +35,8 @@ int main(int argc, char *argv[]) {
 	int xMax, yMax; //max x & y coords. may need to reinitialize these in case user changes screen size.
 	int ch;
 	int nextX, nextY; // should probably set these to middle of screen. 
-	int direction=1; //sets direction of ball if positive right negative left.
+	int xDirection=1; //sets direction of ball if positive right negative left.
+	int yChange=0; //set initial y movement of ball. may want to randomize this val.
     
 	initscr(); //sets up screen 
  	noecho(); //tells terminal to not echo keypresses
@@ -59,6 +60,10 @@ int main(int argc, char *argv[]) {
 
 
 	while(TRUE){
+		//paddle hit conditions
+		bool botHit = (yBall >= yMax);
+		bool topHit = (yBall <= 0);
+
 		ch = getch();
 		//lBar logic
 		if (ch != ERR){
@@ -90,25 +95,54 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 		}
+		bool leftHit = ((nextX == lWin.startx+3) && (yBall >= lWin.starty && yBall <=lWin.starty+5));
+		bool rightHit = ((nextX == rWin.startx-1) && (yBall >= rWin.starty && yBall <= rWin.starty+5));
 		//ball logic
-		nextX = xBall + direction;
+		nextX = xBall + xDirection;
+		nextY = yBall + yChange;
 
-		if ((nextX >= xMax-4 || nextX <= 4) && (yBall >= lWin.starty && yBall <=lWin.starty+5) && (xBall < xMax/2)){
-			direction = direction *-1;
+		//handles x ball movement TODO: add scoring logic here as well.
+		if(rightHit){
+			xDirection = xDirection *-1;
+			xBall += xDirection;
 		}
-		else if((nextX >= xMax-4 || nextX <= 4) && (yBall >= rWin.starty && yBall <= rWin.starty+5) && (xBall > xMax/2)){
-			direction = direction *-1;
+		else if(leftHit){
+			xDirection = xDirection *-1;
+			xBall += xDirection;
 		}
 		else{
-			xBall += direction;
+			xBall += xDirection;
 		}
 
-		//if (nextX >= xMax || nextX < 0){ //for loop that checks wall limits and swaps ball direction
-		//	direction = direction * -1;
-		//} 
-		//else{
-		//	xBall+= direction;
-		//}
+		//handles ball y movement
+		int yLeftRelation = yBall - lWin.starty;
+		int yRightRelation =yBall - rWin.starty;
+
+		if (topHit || botHit){
+			yChange = yChange *-1;	
+		}
+		else if (leftHit){
+			switch(yLeftRelation){
+				case 0: 
+					yChange = -2;
+					break;
+				case 1:
+					yChange = -1;
+					break;
+				case 2:
+					yChange = 0;
+					break;
+				case 3:
+					yChange = 0;
+					break;
+				case 4:
+					yChange = 2;
+					break;
+				default:
+					break;
+			}
+		}
+		yBall += yChange;
 		clear();
    		create_box(&lWin, TRUE);            // or draw paddle here
    		create_box(&rWin, TRUE);            // or draw paddle here

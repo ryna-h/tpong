@@ -2,9 +2,7 @@ Terminal Pong Project
 
 This is mainly a learning tool to get used to c and getting more in depth with the terminal and how it interacts with the rest of the system
 
-Compile command
-gcc -Wall -Wextra -g -o tpong tpong.c
-
-NOTES:
-need to setup bars as a window. 
-need to add collision to ball and bars.
+TODOs:
+    make ball move at different angles depending on where ball is hit on paddle. 
+    need to allow users to hold keys down at same time to make smoother.
+    need to add scoring system to top of screen. 
