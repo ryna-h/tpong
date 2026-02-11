@@ -2,8 +2,6 @@
 #include<ncurses.h>
 #include<locale.h>
 
-#define DELAY 30000
-
 typedef struct{ //sets up struct for window borders.
 	chtype 	ls, rs, ts, bs, 
 	 	tl, tr, bl, br;
@@ -43,7 +41,7 @@ int main(int argc, char *argv[]) {
 	getmaxyx(stdscr, yMax, xMax); //gets screen size in xy coords. stdscr is initialized by initscr()
 	curs_set(FALSE); //hides cursor in window
 	
-	timeout(30); //cycle time for entire game currently 30ms 
+	timeout(60); //cycle time for entire game currently 30ms 
 				 
 	keypad(stdscr, TRUE);		/* I need that nifty F1 	*/
 	init_win_params(&lWin);
@@ -58,11 +56,20 @@ int main(int argc, char *argv[]) {
 	xBall = xMax/2;
 	yBall = yMax/2;
 
+	//score ints
+	int lScore = 0;
+	int rScore = 0;
+
 
 	while(TRUE){
-		//paddle hit conditions
+		//screen hit conditions
 		bool botHit = (yBall >= yMax);
 		bool topHit = (yBall <= 0);
+
+		//score keeping
+		mvprintw(1, xMax/2, "-");
+		mvprintw(1,(xMax/2)+2, "%d", rScore);
+		mvprintw(1,(xMax/2)-2, "%d", lScore);
 
 		ch = getch();
 		//lBar logic
@@ -99,7 +106,6 @@ int main(int argc, char *argv[]) {
 		bool rightHit = ((nextX == rWin.startx-1) && (yBall >= rWin.starty && yBall <= rWin.starty+5));
 		//ball logic
 		nextX = xBall + xDirection;
-		nextY = yBall + yChange;
 
 		//handles x ball movement TODO: add scoring logic here as well.
 		if(rightHit){
@@ -124,24 +130,79 @@ int main(int argc, char *argv[]) {
 		else if (leftHit){
 			switch(yLeftRelation){
 				case 0: 
-					yChange = -2;
+					yChange = -1;
 					break;
 				case 1:
 					yChange = -1;
 					break;
 				case 2:
-					yChange = 0;
+					yChange = yChange;
 					break;
 				case 3:
-					yChange = 0;
+					yChange = yChange;
 					break;
 				case 4:
-					yChange = 2;
+					yChange = yChange;
+					break;
+				case 5:
+					yChange = 1;
+					break;
+				case 6:
+					yChange = 1;
 					break;
 				default:
 					break;
 			}
 		}
+		else if (rightHit){
+			switch(yRightRelation){
+				case 0: 
+					yChange = -1;
+					break;
+				case 1:
+					yChange = -1;
+					break;
+				case 2:
+					yChange = yChange;
+					break;
+				case 3:
+					yChange = yChange;
+					break;
+				case 4:
+					yChange = yChange;
+					break;
+				case 5:
+					yChange = 1;
+					break;
+				case 6:
+					yChange = 1;
+					break;
+				default:
+					break;
+			}
+		}
+
+		// score logic
+		if (xBall < lWin.startx+3){
+			// add 1 to right score and reset ball pos.
+			rScore +=1;
+			yBall = yMax/2;
+			xBall = xMax/2;
+		}
+		else if(xBall > rWin.startx){
+			// add 1 to left score and reset ball pos.
+			lScore +=1;
+			yBall = yMax/2;
+			xBall = xMax/2;
+		}
+
+		//TEMP RESET BALL LOGIC
+		if (ch == 'r'){
+			yBall = yMax/2;
+			xBall = xMax/2;
+			yChange = 0;
+		}
+
 		yBall += yChange;
 		clear();
    		create_box(&lWin, TRUE);            // or draw paddle here
@@ -154,7 +215,7 @@ int main(int argc, char *argv[]) {
 
 // window parameter setup
 void init_win_params(WIN *p_win){
-	p_win->height = 5;
+	p_win->height = 6;
 	p_win->width = 2;
 	p_win->starty = (LINES - p_win->height)/2; //need to look into this	
 	p_win->startx = (COLS - p_win->width)/2; // need to look into this
